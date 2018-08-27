@@ -11,10 +11,7 @@ from keras.layers import Wrapper
 
 import numpy as np
 import re
-import matplotlib.pyplot as plt
-
-import PIL
-from PIL import Image, ImageFont, ImageDraw
+from PIL import ImageFont
 
 
 def _hex2RGB(h):
