@@ -32,13 +32,21 @@ from K_model_plot import _get_model_Svg
 _get_model_Svg(model,filename="my_model.svg",display_shapes=True)
 ```
 
-This call will generate an svg image with a graph representing the model we just created. The "display_shapes" flag is used to toggle between displayinh or not the shape of the data through the layers of the net. In case the flag is set to True, the shape of the activations will be shown after any layer of the model that has the potential to effectively change the size of the data: convolutional, dense, pooling, flatten layers (activation, normalization, concatenate, merge, dropout layers are ignored)
+This call will generate an svg image with a graph representing the model we just created. The "display_shapes" flag is used to toggle between displayinh or not the shape of the data through the layers of the net or not displaying them. In case the flag is set to True, the shape of the activations will be shown after any layer of the model that has the potential to effectively change the size of the data: convolutional, dense, pooling, flatten layers (activation, normalization, concatenate, merge, dropout layers are ignored). There is another flag that can be specified: "display_params", which is by default set to False. When this flag is set to True some important parameters of different layers of the model are displayed along with the layer itself (such as the kernel size and strides of a Conv2D layer, or the pool_size of a Pool layer, the dropout rate in a dropout layer, etc.). 
 
 In the case of the example model previously defined the resulting SVG image would look like:
 
 <p align="center">
  <img src="./my_model.png">
 </p>
+
+If the display_params flag was set to True in the previous example the result would look like:
+
+<p align="center">
+ <img src="./my_model_params.png">
+</p>
+
+
 
 
 ## CODE DEMO
