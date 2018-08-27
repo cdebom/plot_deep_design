@@ -34,6 +34,11 @@ _get_model_Svg(model,filename="my_model.svg",display_shapes=True)
 
 This call will generate an svg image with a graph representing the model we just created. The "display_shapes" flag is used to toggle between displayinh or not the shape of the data through the layers of the net. In case the flag is set to True, the shape of the activations will be shown after any layer of the model that has the potential to effectively change the size of the data: convolutional, dense, pooling, flatten layers (activation, normalization, concatenate, merge, dropout layers are ignored)
 
+In the case of the example model previously defined the resulting SVG image would look like:
+
+![Alt text](./my_model.svg)
+<img src="./my_model.svg">
+
 ## CODE DEMO
 
 A DEMO of this usage and the code can be found in jupyter notebook "Plot_Deep_Nets_DEMO.ipynb".
