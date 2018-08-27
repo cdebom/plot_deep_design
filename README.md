@@ -36,8 +36,8 @@ This call will generate an svg image with a graph representing the model we just
 
 In the case of the example model previously defined the resulting SVG image would look like:
 
-![Alt text](./my_model.svg)
-<img src="./my_model.svg">
+![Alt text](my_model.svg)
+<img src="my_model.svg">
 
 ## CODE DEMO
 
