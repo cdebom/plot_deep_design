@@ -29,7 +29,7 @@ model = Model(input,layer)
 Now call the function to visualize the model (it does not require the model to be compiled nor trained, just created)
 ```
 from K_model_plot import _get_model_Svg
-_get_model_Svg(model,filename="my_model.svg",display_shapes=True)
+_get_model_Svg(model,filename="my_model.svg", display_shapes=True, display_params=False)
 ```
 
 This call will generate an svg image with a graph representing the model we just created. The "display_shapes" flag is used to toggle between displayinh or not the shape of the data through the layers of the net or not displaying them. In case the flag is set to True, the shape of the activations will be shown after any layer of the model that has the potential to effectively change the size of the data: convolutional, dense, pooling, flatten layers (activation, normalization, concatenate, merge, dropout layers are ignored). There is another flag that can be specified: "display_params", which is by default set to False. When this flag is set to True some important parameters of different layers of the model are displayed along with the layer itself (such as the kernel size and strides of a Conv2D layer, or the pool_size of a Pool layer, the dropout rate in a dropout layer, etc.). 
@@ -47,7 +47,53 @@ If the display_params flag was set to True in the previous example the result wo
 </p>
 
 
+## SUPPORTED LAYERS
+All keras layers are supported. The render for each type of layer is shown below:
 
+### Input layers
+<p align="center">
+ <img src="./imgs/input_layer.png">
+</p>
+
+### Convolutional layers
+<p align="center">
+ <img src="./imgs/conv_layers.png">
+</p>
+
+### Pool layers
+<p align="center">
+ <img src="./imgs/pool_layers.png">
+</p>
+
+### Activation layers
+<p align="center">
+ <img src="./imgs/activation_layers.png">
+</p>
+
+### Normalization Layers
+<p align="center">
+ <img src="./imgs/norm_layers.png">
+</p>
+
+### Dropout layers
+<p align="center">
+ <img src="./imgs/dropout_layers.png">
+</p>
+
+### Flatten layers
+<p align="center">
+ <img src="./imgs/flatten_layers.png">
+</p>
+
+### Dense layers
+<p align="center">
+ <img src="./imgs/dense_layers.png">
+</p>
+
+### Operation layers (add, concatenate, etc.)
+<p align="center">
+ <img src="./imgs/other_layers.png">
+</p>
 
 ## CODE DEMO
 

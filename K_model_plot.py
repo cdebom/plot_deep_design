@@ -25,7 +25,7 @@ def _hex2RGB(h):
         A = int("0x"+h[6:8],16)
     return R,G,B,A
 
-def _get_model_Svg(model,filename=None,display_shapes=True):
+def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False):
     
     # Get model dot (optimal tags locations)
     ddot = model_to_dot(model).create_plain().splitlines() # split linebreaks
@@ -99,25 +99,54 @@ def _get_model_Svg(model,filename=None,display_shapes=True):
             tag_color = "#2a7fffff"
             border_color = "#5151c0ff"
             font_color = "#ffffffff"
-            txt = layer_type
             params = {'activation':layer.activation.func_name,
                       'kernel':layer.kernel.shape.as_list(),
                       'padding':layer.padding,
                       'strides':layer.strides}
+            if not display_params:
+                txt = layer_type
+            else:
+                kernel = tuple(layer.kernel.shape.as_list())
+                #if layer.activation.func_name != 'linear':
+                if layer.strides != (1,1):
+                    if kernel[2] != 1:
+                        txt = [layer_type,
+                               str(kernel[0:3]) + " x " + str(kernel[-1]),
+                               "s"+str(layer.strides)]
+                    else: 
+                        txt = [layer_type,
+                               str(kernel[0:2]) + " x " + str(kernel[-1]),
+                               "s"+str(layer.strides)]
+                else:
+                    if kernel[2] != 1:
+                        txt = [layer_type,
+                               str(kernel[0:3]) + " x " + str(kernel[-1])]
+                    else: 
+                        txt = [layer_type,
+                               str(kernel[0:2]) + " x " + str(kernel[-1])]
+            
             oshape = layer.output_shape
         elif (layer_type == "MaxPooling2D"):
-            tag_color = "#ff0000ff"    
-            border_color = "#800000ff"
+            tag_color = "#d3605bff"    
+            border_color = "#9c3030ff"
             font_color = "#ffffffff"
-            txt = "MaxPool2D"
             params = {'pool_size':layer.pool_size,
                       'strides':layer.strides}
+            if layer.pool_size != (1,1):
+                txt = ["MaxPool2D",
+                       str(layer.pool_size)]
+            else:
+                txt = "MaxPool2D"
             oshape = layer.output_shape
         elif (layer_type == "AveragePooling2D"):
-            tag_color = "#ff0000ff"    
-            border_color = "#800000ff"
+            tag_color = "#d3605bff"    
+            border_color = "#9c3030ff"
             font_color = "#ffffffff"
-            txt = "AvgPool2D"
+            if layer.pool_size != (1,1):
+                txt = ["AvgPool2D",
+                       str(layer.pool_size)]
+            else:
+                txt = "AvgPool2D"
             params = {'pool_size':layer.pool_size,
                       'strides':layer.strides}
             oshape = layer.output_shape
@@ -133,6 +162,22 @@ def _get_model_Svg(model,filename=None,display_shapes=True):
             font_color = "#000000ff"
             if (layer.activation.func_name == 'relu'):
                 layer_typeName = 'ReLU'
+            elif (layer.activation.func_name == 'elu'):
+                layer_typeName = 'eLU'
+            elif (layer.activation.func_name == 'softmax'):
+                layer_typeName = 'Softmax'
+            elif (layer.activation.func_name == 'softplus'):
+                layer_typeName = 'Softplus'
+            elif (layer.activation.func_name == 'softsign'):
+                layer_typeName = 'Softsign'
+            elif (layer.activation.func_name == 'tanh'):
+                layer_typeName = 'tanH'
+            elif (layer.activation.func_name == 'sigmoid'):
+                layer_typeName = 'Sigmoid'
+            elif (layer.activation.func_name == 'hard_sigmoid'):
+                layer_typeName = 'hard Sigmoid'
+            elif (layer.activation.func_name == 'linear'):
+                layer_typeName = 'Linear'
             txt = layer_typeName
             params = dict()
         elif (layer_type == "Flatten"):
@@ -160,7 +205,10 @@ def _get_model_Svg(model,filename=None,display_shapes=True):
             tag_color = "#00ffffff"
             border_color = "#006680ff"
             font_color = "#000000ff"
-            txt = "Dropout"
+            if (display_params):
+                txt = ["Dropout",str(int(100*layer.rate))+"%"]
+            else:
+                txt = "Dropout"
             params = {'rate':layer.rate}
         else:
             tag_color = "#e9c6afff"
@@ -179,7 +227,21 @@ def _get_model_Svg(model,filename=None,display_shapes=True):
         
         # Now let's calculate the size of this tag
         font = ImageFont.truetype("UbuntuMono-R.ttf", 40)
-        tagSize = font.getsize(txt)
+        params_font = ImageFont.truetype("Ubuntu-L.ttf", 20)
+        if type(txt) is not list:
+            tagSize = font.getsize(txt)
+        else:
+            tagSize = []
+            for itxt_tmp,txt_tmp in enumerate(txt):
+                if itxt_tmp == 0:
+                    tagSize.append(font.getsize(txt_tmp))
+                else:
+                    tagSize.append(params_font.getsize(txt_tmp))
+            #tagSize = [font.getsize(txt_tmp) for txt_tmp in txt]
+            tag_space = 1
+            tagSize = (np.max([t[0] for t in tagSize]),np.sum([t[1] + tag_space for t in tagSize]))
+            tagSize = (tagSize[0], tagSize[1] + 2*tag_space)
+            layersInfo[layer_id]['dotPosition'][3] = tagSize[1]
         h_border = 10
         bradius = 20
         border = 5
@@ -222,8 +284,19 @@ def _get_model_Svg(model,filename=None,display_shapes=True):
         # it is important than H0 > tagSize[1]
         outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
         inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
-        text_svg = '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
-        
+        if type(txt) is not list:
+            text_svg = '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
+        else:
+            ycum = 0
+            text_svg = ""
+            for ittx,ttx in enumerate(txt):
+                if ittx == 0:
+                    tmp_size = font.getsize(ttx)
+                    text_svg += '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" font-weight="normal" dy=".3em">%s</text>'%(X0,ycum+Y0+tmp_size[1]//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,ttx)
+                else:
+                    tmp_size = params_font.getsize(ttx)
+                    text_svg += '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="20px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,ycum+Y0+tmp_size[1]//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,ttx)                    
+                ycum += tmp_size[1]
         
         x0 = X0 - tagSize[0]//2 - h_border - border
         x1 = X0 - tagSize[0]//2 + tagSize[0] + h_border + border
