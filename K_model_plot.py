@@ -10,7 +10,7 @@ from keras.utils.vis_utils import model_to_dot
 from keras.layers import Wrapper
 
 import numpy as np
-import re
+import re, inspect
 from PIL import ImageFont
 
 
@@ -95,7 +95,7 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
             txt = "Input"
             params = {'shape':layer.input.shape.as_list()}
             oshape = layer.output_shape
-        elif (layer_type == "Conv2D"):
+        elif (layer_type == "Conv1D") or (layer_type == "Conv2D") or (layer_type == "Conv3D") or (layer_type == "Conv2DTranspose"):
             tag_color = "#2a7fffff"
             border_color = "#5151c0ff"
             font_color = "#ffffffff"
@@ -109,56 +109,141 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
                 kernel = tuple(layer.kernel.shape.as_list())
                 #if layer.activation.func_name != 'linear':
                 if layer.strides != (1,1):
-                    if kernel[2] != 1:
-                        txt = [layer_type,
-                               str(kernel[0:3]) + " x " + str(kernel[-1]),
-                               "s"+str(layer.strides)]
-                    else: 
-                        txt = [layer_type,
-                               str(kernel[0:2]) + " x " + str(kernel[-1]),
-                               "s"+str(layer.strides)]
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
                 else:
-                    if kernel[2] != 1:
-                        txt = [layer_type,
-                               str(kernel[0:3]) + " x " + str(kernel[-1])]
-                    else: 
-                        txt = [layer_type,
-                               str(kernel[0:2]) + " x " + str(kernel[-1])]
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
             
             oshape = layer.output_shape
-        elif (layer_type == "MaxPooling2D"):
-            tag_color = "#d3605bff"    
-            border_color = "#9c3030ff"
+        elif (layer_type == "SeparableConv1D") or (layer_type == "SeparableConv2D"):
+            tag_color = "#2a7fffff"
+            border_color = "#5151c0ff"
             font_color = "#ffffffff"
-            params = {'pool_size':layer.pool_size,
+            params = {'activation':layer.activation.func_name,
+                      'kernel':layer.kernel_size,
+                      'padding':layer.padding,
                       'strides':layer.strides}
-            if layer.pool_size != (1,1):
-                txt = ["MaxPool2D",
-                       str(layer.pool_size)]
+            if not display_params:
+                txt = layer_type
             else:
-                txt = "MaxPool2D"
+                kernel = tuple(layer.kernel_size)
+                #if layer.activation.func_name != 'linear':
+                if layer.strides != (1,1):
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
+                else:
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
+            
             oshape = layer.output_shape
-        elif (layer_type == "AveragePooling2D"):
+        elif (layer_type == "LocallyConnected1D") or (layer_type == "LocallyConnected2D"):
+            tag_color = "#ffaaeeff"
+            border_color = "#d400aaff"
+            font_color = "#000000ff"
+            params = {'activation':layer.activation.func_name,
+                      'kernel':layer.kernel_size,
+                      'padding':layer.padding,
+                      'strides':layer.strides}
+            if not display_params:
+                txt = layer_type
+            else:
+                kernel = tuple(layer.kernel_size)
+                #if layer.activation.func_name != 'linear':
+                if layer.strides != (1,1):
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
+                else:
+                    txt = [layer_type,
+                           str(kernel[:-1]) + " x " + str(kernel[-1]),
+                           "s"+str(layer.strides)]
+        
+        elif (layer_type == "Cropping1D") or (layer_type == "Cropping2D") or (layer_type == "Cropping3D"):
+            tag_color = "#2a7fffff"
+            border_color = "#5151c0ff"
+            font_color = "#ffffffff"
+            params = {'cropping':layer.cropping}
+            if not display_params:
+                txt = layer_type
+            else:
+                cropping = tuple(layer.cropping)
+                #if layer.activation.func_name != 'linear':
+                if cropping != (1,1):
+                    txt = [layer_type,
+                          str(cropping)]
+                else:
+                    txt = layer_type
+        elif (layer_type == "UpSampling1D") or (layer_type == "UpSampling2D") or (layer_type == "UpSampling3D"):
+            tag_color = "#2a7fffff"
+            border_color = "#5151c0ff"
+            font_color = "#ffffffff"
+            params = {'size':layer.size}
+            if not display_params:
+                txt = layer_type
+            else:
+                txt = [layer_type,
+                      str(layer.size)]
+        elif (layer_type == "ZeroPadding1D") or (layer_type == "ZeroPadding2D") or (layer_type == "ZeroPadding3D"):
+            tag_color = "#2a7fffff"
+            border_color = "#5151c0ff"
+            font_color = "#ffffffff"
+            params = {'padding':layer.padding}
+            if not display_params:
+                txt = layer_type
+            else:
+                txt = [layer_type,
+                      str(layer.padding)]
+        elif (layer_type == "MaxPooling1D") or (layer_type == "MaxPooling2D") or (layer_type == "MaxPooling3D"):
             tag_color = "#d3605bff"    
             border_color = "#9c3030ff"
             font_color = "#ffffffff"
-            if layer.pool_size != (1,1):
-                txt = ["AvgPool2D",
-                       str(layer.pool_size)]
-            else:
-                txt = "AvgPool2D"
             params = {'pool_size':layer.pool_size,
                       'strides':layer.strides}
+            if layer.pool_size != (1,1) and display_params:
+                txt = ["MaxPool" + layer_type[-2:],
+                       str(layer.pool_size)]
+            else:
+                txt = "MaxPool" + layer_type[-2:]
+            oshape = layer.output_shape
+        elif (layer_type == "AveragePooling1D") or (layer_type == "AveragePooling2D") or (layer_type == "AveragePooling3D"):
+            tag_color = "#d3605bff"    
+            border_color = "#9c3030ff"
+            font_color = "#ffffffff"
+            params = {'pool_size':layer.pool_size,
+                      'strides':layer.strides}
+            if layer.pool_size != (1,1) and display_params:
+                txt = ["AvgPool" + layer_type[-2:],
+                       str(layer.pool_size)]
+            else:
+                txt = "AvgPool" + layer_type[-2:]
+            oshape = layer.output_shape
+        elif (layer_type == "GlobalAveragePooling1D") or (layer_type == "GlobalAveragePooling2D") or (layer_type == "GlobalAveragePooling3D"):
+            tag_color = "#d3605bff"    
+            border_color = "#9c3030ff"
+            font_color = "#ffffffff"
+            params = dict()
+            txt = "GlobalAvgPool" + layer_type[-2:]
+            oshape = layer.output_shape
+        elif (layer_type == "GlobalMaxPooling1D") or (layer_type == "GlobalMaxPooling2D") or (layer_type == "GlobalMaxPooling3D"):
+            tag_color = "#d3605bff"    
+            border_color = "#9c3030ff"
+            font_color = "#ffffffff"
+            txt = "GlobalMaxPool" + layer_type[-2:]
             oshape = layer.output_shape
         elif (layer_type == "BatchNormalization"):
-            tag_color = "#ffff00ff"
-            border_color = "#808000ac"
+            tag_color = "#f6f65bff"
+            border_color = "#b7b700ab"
             font_color = "#000000ff"
             txt = "Bnorm"
             params = dict()
         elif (layer_type == "Activation"):
-            tag_color = "#00ff00ff"
-            border_color = "#008000a9"
+            tag_color = "#bcfebcff"
+            border_color = "#0fb40fa8"
             font_color = "#000000ff"
             if (layer.activation.func_name == 'relu'):
                 layer_typeName = 'ReLU'
@@ -180,36 +265,206 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
                 layer_typeName = 'Linear'
             txt = layer_typeName
             params = dict()
+        elif (layer_type == "LeakyReLU") or (layer_type == "ELU"):
+            tag_color = "#bcfebcff"
+            border_color = "#0fb40fa8"
+            font_color = "#000000ff"
+            if display_params:
+                txt = u"\u03b1 = " + "%0.2f"%(layer.alpha)
+                txt = txt.encode('utf-8')
+                txt = [layer_type,
+                       txt]
+            else:
+                txt = layer_type
+            params = dict()
+        elif (layer_type == "PReLU") or (layer_type == "Softmax"):
+            tag_color = "#bcfebcff"
+            border_color = "#0fb40fa8"
+            font_color = "#000000ff"
+            txt = layer_type
+            params = dict()
+        elif (layer_type == "ThresholdedReLU"):
+            tag_color = "#bcfebcff"
+            border_color = "#0fb40fa8"
+            font_color = "#000000ff"
+            if display_params:
+                txt = u"\u03b8 = " + "%0.2f"%(layer.theta)
+                txt = txt.encode('utf-8')
+                txt = [layer_type,
+                       txt]
+            else:
+                txt = layer_type
+            params = dict()
         elif (layer_type == "Flatten"):
-            tag_color = "#cd8a63e2"
-            border_color = "#a47a4aff"
-            font_color = "#ffffffff"
+            tag_color = "#c6afe9e3"
+            border_color = "#975deeff"
+            font_color = "#000000ff"
             txt = layer_type
             params = dict()
             oshape = layer.output_shape
         elif (layer_type == "Dense"):
-            tag_color = "#d42068e2"
-            border_color = "#540023a9"
-            font_color = "#ffffffff"
+            tag_color = "#e47ca6e3"
+            border_color = "#aa114ee3"
+            font_color = "#000000ff"
             txt = layer_type + str(layer.units)
             params = {'units':layer.units}
             oshape = layer.output_shape
+        elif (layer_type == "Reshape") or (layer_type == "Permute") or (layer_type == "RepeatVector"):
+            tag_color = "#cd8a63e2"
+            border_color = "#a47a4aff"
+            font_color = "#ffffffff"
+            txt = layer_type 
+            oshape = layer.output_shape
+        elif (layer_type == "Lambda"):
+            tag_color = "#ffb380ff"
+            border_color = "#ff6600ff"
+            font_color = "#000000ff"
+            layer_function = inspect.getsource(layer.function)
+            patt = re.compile("layer = Lambda\(lambda (\w+): ([^)]+)\)\(input\)")
+            matches = patt.findall(layer_function)[0]
+            layer_function = matches[1]
+            txt = u"\u03bb: " + layer_function
+            txt = txt.encode('utf-8')
+            oshape = layer.output_shape
+        elif (layer_type == "ActivityRegularization"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "ActReg"
+            params = dict()
+        elif (layer_type == "Masking"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = layer_type
+            params = {"mask_value":layer.mask_value}
         elif (layer_type == "Concatenate"):
             tag_color = "#ffffffff"
-            border_color = "#0000008f"
+            border_color = "#000000ff"
             font_color = "#000000ff"
-            txt = "cat"
+            #txt = "cat"
+            txt = "⌒"
             params = dict()
             oshape = layer.output_shape
-        elif (layer_type == "Dropout"):
+        elif (layer_type == "Merge") or (layer_type == "Add"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "+"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Subtract"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "-"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Multiply"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "*"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Average"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "~"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Maximum"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "⋁"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Dot"):
+            tag_color = "#ffffffff"
+            border_color = "#000000ff"
+            font_color = "#000000ff"
+            txt = "×"
+            params = dict()
+            oshape = layer.output_shape
+        elif (layer_type == "Dropout") or (layer_type == "SpatialDropout1D") or (layer_type == "SpatialDropout2D") or (layer_type == "SpatialDropout3D"):
             tag_color = "#00ffffff"
             border_color = "#006680ff"
             font_color = "#000000ff"
             if (display_params):
-                txt = ["Dropout",str(int(100*layer.rate))+"%"]
+                txt = [layer_type,str(int(100*layer.rate))+"%"]
             else:
-                txt = "Dropout"
+                txt = layer_type
             params = {'rate':layer.rate}
+        elif (layer_type == "RNN"):
+            tag_color = "#eeffaaff"
+            border_color = "#aad400ab"
+            font_color = "#000000ff"
+            txt = layer_type
+            params = dict()
+        elif (layer_type == "SimpleRNN") or (layer_type == "GRU") or (layer_type == "CuDNNGRU") or (layer_type == "CuDNNLSTM") or (layer_type == "LSTM"):
+            tag_color = "#eeffaaff"
+            border_color = "#aad400ab"
+            font_color = "#000000ff"
+            if (display_params):
+                txt = [layer_type,
+                       str(layer.units)]
+            else:
+                txt = layer_type
+            params = dict()
+        elif (layer_type == "ConvLSTM2D"):
+            tag_color = "#eeffaaff"
+            border_color = "#aad400ab"
+            font_color = "#000000ff"
+            if (display_params):
+                txt = [layer_type,
+                       str(layer.kernel_size)]
+            else:
+                txt = layer_type
+            params = {"kernel":layer.kernel_size,
+                      "strides":layer.strides}
+        elif (layer_type == "Embedding"):
+            tag_color = "#afafe9e3"
+            border_color = "#3737c8ff"
+            font_color = "#000000ff"
+            txt = layer_type
+            params = {"input_dim":layer.input_dim,
+                      "output_dim":layer.output_dim,
+                      "input_length":layer.input_length}
+            oshape = layer.output_shape
+        elif (layer_type == "GaussianNoise"):
+            tag_color = "#e9c6afff"
+            border_color = "#784421a8"
+            font_color = "#000000ff"
+            if display_params:
+                txt = u"\u03c3 = " + str(layer.stddev)
+                txt = [layer_type,
+                       txt.encode('utf-8')]
+            else:
+                txt = layer_type
+            params = {"stddev":layer.stddev}
+        elif (layer_type == "GaussianDropout"):
+            tag_color = "#e9c6afff"
+            border_color = "#784421a8"
+            font_color = "#000000ff"
+            if display_params:
+                txt = [layer_type,
+                       str(int(100*layer.rate))+"%"]
+            else:
+                txt = layer_type
+            params = {"rate":layer.rate}
+        elif (layer_type == "AlphaDropout"):
+            tag_color = "#e9c6afff"
+            border_color = "#784421a8"
+            font_color = "#000000ff"
+            if display_params:
+                txt = [layer_type,
+                       str(int(100*layer.rate))+"%"]
+            else:
+                txt = layer_type
+            params = {"rate":layer.rate,
+                      "noise_shape":layer.noise_shape}
         else:
             tag_color = "#e9c6afff"
             border_color = "#005444a9"
@@ -282,11 +537,37 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
         font_color = layersInfo[layer_id]['fontColor']
         
         # it is important than H0 > tagSize[1]
-        outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
-        inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
         if type(txt) is not list:
-            text_svg = '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
+            # check if concatenate or sum
+            if (txt == "⌒"):
+                radius = 30
+                dy = 3
+                circle_svg = '<circle cx="%f" cy="%f" r="%f" stroke="black" stroke-width="5" fill="white" />'%(X0,Y0+radius-dy,radius)
+                circle_svg += '<path stroke-width="5" d="M%f,%f C %f %f, %f %f, %f,%f" stroke="black" fill="none" />'%(X0-15,Y0+5+radius-dy,X0-15,Y0-15+radius-dy,X0+15,Y0-15+radius-dy,X0+15,Y0+5+radius-dy)
+                tagSvg = "<g>" + circle_svg + "</g>"    
+
+            elif (txt == "+") or (txt == "-") or (txt == "*") or (txt == "~") or (txt == "·") or (txt == "×"):
+                radius = 30
+                dy = 3
+                circle_svg = '<circle cx="%f" cy="%f" r="%f" stroke="black" stroke-width="5" fill="white" />'%(X0,Y0+radius-dy,radius)
+                circle_svg += '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="50px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+radius-dy,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
+                tagSvg = "<g>" + circle_svg + "</g>" 
+            elif (txt == "⋁"):
+                radius = 30
+                dy = 3
+                circle_svg = '<circle cx="%f" cy="%f" r="%f" stroke="black" stroke-width="5" fill="white" />'%(X0,Y0+radius-dy,radius)
+                circle_svg += '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+radius-dy,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
+                tagSvg = "<g>" + circle_svg + "</g>" 
+            else:
+                outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
+                inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
+                text_svg = '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,txt)
+                tagSvg = "<g>" + outter_rectangle_svg + inner_rectangle_svg + text_svg + "</g>"    
+        
         else:
+            outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
+            inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
+                
             ycum = 0
             text_svg = ""
             for ittx,ttx in enumerate(txt):
@@ -297,6 +578,9 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
                     tmp_size = params_font.getsize(ttx)
                     text_svg += '<text x="%f" y="%f" text-anchor="middle" fill="%s" fill-opacity="%1.2f" font-size="20px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,ycum+Y0+tmp_size[1]//2,font_color[0:-2],_hex2RGB(font_color)[3]/255.,ttx)                    
                 ycum += tmp_size[1]
+            
+            tagSvg = "<g>" + outter_rectangle_svg + inner_rectangle_svg + text_svg + "</g>"    
+
         
         x0 = X0 - tagSize[0]//2 - h_border - border
         x1 = X0 - tagSize[0]//2 + tagSize[0] + h_border + border
@@ -304,7 +588,6 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
         y1 = Y0 + H0 + border
         layersInfo[layer_id]['outter_bbox'] = [x0,y0,x1,y1] 
         
-        tagSvg = "<g>" + outter_rectangle_svg + inner_rectangle_svg + text_svg + "</g>"    
         
         SvgTag += tagSvg
         
@@ -315,7 +598,9 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
     while (ddot_tmp != "stop"):
         ddot_type = ddot_tmp[0:4]
         if ddot_type == "edge":
-            pattern = re.compile("edge (\d+) (\d+) (\d+) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) (\w+) (\w+)")
+            #pattern = re.compile("edge (\d+) (\d+) (\d+) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) (\w+) (\w+)")
+            pattern = re.compile("edge (\d+) (\d+)")
+            
             matches = pattern.findall(ddot_tmp)[0]
             startId = matches[0]
             endId = matches[1]
@@ -332,6 +617,7 @@ def _get_model_Svg(model,filename=None,display_shapes=True,display_params=False)
             bezierSvg = '<path stroke-width="%i" d="M%f,%f C %f %f, %f %f, %f %f" stroke="black" fill="none" marker-end="url(#arrow)" />'%(stroke_width,x0,y0,x0,y1-13,x1,y0,x1,y1-13)
             
             # Now add the output_shape tag
+            shapeTagSvg =  ""
             if (layersInfo[startId]['output_shape'] != [] and display_shapes):
                 shapeTagSvg = '<text x="%f" y="%f" text-anchor="start" alignment-baseline="hanging" fill="#000000" font-size="20px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(np.abs((x0+x1)/2)+5,y0+10,str(layersInfo[startId]['output_shape'][1:]))
 

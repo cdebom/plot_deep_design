@@ -48,11 +48,12 @@ If the display_params flag was set to True in the previous example the result wo
 
 
 ## SUPPORTED LAYERS
-All keras layers are supported. The render for each type of layer is shown below:
+Almost every keras layer is supported (unsupported layers are: SimpleRNNCell, GRUCell nor LSTMCell -which are usually wrapped inside an RNN, SimpleRNN, GRU, LSTM or ConvLSTM2D layer-. Layer wrappers (such as TimeDistributed or Bidirectional) are not supported either). The render for each type of layer is shown below:
 
-### Input layers
+### Core layers
+From top to bottom and left to right: Input, Flatten, Dense, Lambda, ActivityRegularization, Masking, Reshape, Permute and RepeatVector layers.
 <p align="center">
- <img src="./imgs/input_layer.png">
+ <img src="./imgs/core_layers.png">
 </p>
 
 ### Convolutional layers
@@ -60,14 +61,25 @@ All keras layers are supported. The render for each type of layer is shown below
  <img src="./imgs/conv_layers.png">
 </p>
 
-### Pool layers
+### Pooling layers
 <p align="center">
  <img src="./imgs/pool_layers.png">
 </p>
 
-### Activation layers
+### Locally Connected Layers
+<p align="center">
+ <img src="./imgs/locally_layers.png">
+</p>
+
+### Activation layers 
+Notice that these layers are created using the Activation layer and specifying the activation function rather than using specific advanced activation layers. This means that the ReLU layer shown below was obtained using ```keras.layers.Activation('relu')``` instead of ```keras.layers.ReLU```.
 <p align="center">
  <img src="./imgs/activation_layers.png">
+</p>
+
+### Advanced Activation Layers
+<p align="center">
+ <img src="./imgs/advance_activation_layers.png">
 </p>
 
 ### Normalization Layers
@@ -80,19 +92,24 @@ All keras layers are supported. The render for each type of layer is shown below
  <img src="./imgs/dropout_layers.png">
 </p>
 
-### Flatten layers
+### Recurrent layers
 <p align="center">
- <img src="./imgs/flatten_layers.png">
+ <img src="./imgs/recurrent_layers.png">
 </p>
 
-### Dense layers
+### Noise layers
 <p align="center">
- <img src="./imgs/dense_layers.png">
+ <img src="./imgs/noise_layers.png">
 </p>
 
-### Operation layers (add, concatenate, etc.)
+### Embedding layers
 <p align="center">
- <img src="./imgs/other_layers.png">
+ <img src="./imgs/embedding_layers.png">
+</p>
+
+### Merge layers
+<p align="center">
+ <img src="./imgs/merge_layers.png">
 </p>
 
 ## CODE DEMO
