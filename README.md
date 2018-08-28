@@ -34,9 +34,10 @@ _get_model_Svg(model,filename="my_model.svg", display_shapes=True, display_param
 
 This call will generate an svg image with a graph representing the model we just created. The "display_shapes" flag is used to toggle between displayinh or not the shape of the data through the layers of the net or not displaying them. In case the flag is set to True, the shape of the activations will be shown after any layer of the model that has the potential to effectively change the size of the data: convolutional, dense, pooling, flatten layers (activation, normalization, concatenate, merge, dropout layers are ignored). There is another flag that can be specified: "display_params", which is by default set to False. When this flag is set to True some important parameters of different layers of the model are displayed along with the layer itself (such as the kernel size and strides of a Conv2D layer, or the pool_size of a Pool layer, the dropout rate in a dropout layer, etc.). 
 
-In the case of the example model previously defined the resulting SVG image would look like:
+The image below shows a comparison between the graph obtained using keras built in visualization utility (https://keras.io/visualization) on the left, and the result using our function, on the right, for the model defined in the previous example:
 
 <p align="center">
+ <img src="./builtin_model.png">
  <img src="./my_model.png">
 </p>
 
