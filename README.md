@@ -48,6 +48,17 @@ If the display_params flag was set to True in the previous example the result wo
 </p>
 
 
+## FUNCTION INPUTS & FLAGS
+This function handles 7 different inputs, which are:
+
+* model (required): The keras model to be represented as SVG.
+* filename (optional): The desired filename of the output SVG file. Default value is "model.svg". Example: filename="my_model.svg" or "my_model".
+* display_shapes (optional): This flag, when set to True, forces the function to print the shape of the activations after those layers that change the shape of the data (convolutional, flatten, dense, etc.). Default value is True.
+* display_params (optional): This flag, when set to True, forces the function to print the internal parameters of each layer within the layer tag itself (such as the kernel size of convolutional layers, the number of units on Dense layers or the ratio in Dropout layers). Default value is False.
+* display_wrappers (optional): This flag, when set to True, forces the function to display both the name of the Wrapper and the name of the Children layer within it, for each wrapper encountered in the model. For instance, say that you are using a Wrapper such as Yarin Gal's ConcreteDropout (https://github.com/yaringal/ConcreteDropout) in a convolutional layer (something like: ```layer = ConcreteDropout(Conv2D(64,(3,3)))(layer)```), then if this flag is set to True this layer will appear on the SVG as "ConcreteDropout(Conv2D)", while it will appear as just "Conv2D" if it's set to False. Default value is False.
+* display_lambdas (optional): This flag, when set to True, forces the function to display the internal function on each Lambda layer in the model, within the layer's tag. For instance, say you define a lambda layer such as ```layer = Lambda(lambda x: x**2)(layer)```, if this flag was set to True this Lambda layer would appear on the output SVG file as "Lambda: x**2" instead of simply "Lambda" in case the flag was set to False. Default value is False.
+
+
 ## SUPPORTED LAYERS
 Almost every keras layer is supported (unsupported layers are: SimpleRNNCell, GRUCell nor LSTMCell -which are usually wrapped inside an RNN, SimpleRNN, GRU, LSTM or ConvLSTM2D layer-. Layer wrappers (such as TimeDistributed or Bidirectional) are not supported either). See further documentation on Keras layers on https://keras.io/layers . The render for each type of layer is shown below:
 
