@@ -783,32 +783,41 @@ def _get_model_Svg(model,
     L = 40
     if (edgesLength != []):
         L = np.median(edgesLength)
-    for out in model.output_layers:
-        xy0 = layersInfo[str(id(out))]['outter_bbox']
-        # Get the position of the box
-        tagSize = font.getsize("Output")
-        X0 = (xy0[0]+xy0[2])/2
-        Y0 = xy0[3] + L 
-        bbox[3] += L
-        _H = np.max((_H,Y0))
-        
-        tag_color = "#acacace2"
-        border_color = "#4d4d4da9"
-        font_color = "#ffffffff"
-        
-        outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
-        inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
-        text_svg = '<text x="%f" y="%f" text-anchor="middle" alignment-baseline="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" font-weight="normal" dy=".3em">Output</text>'%(X0,Y0+(tagSize[1] - tagSize[1]/2 + border),font_color[0:-2],_hex2RGB(font_color)[3]/255.)
     
-        tagSvg = "<g>" + outter_rectangle_svg + inner_rectangle_svg + text_svg + "</g>"    
-
-        # Now add edge (line)
-        bezierSvg = '<path stroke-width="%i" d="M%f,%f C %f %f, %f %f, %f %f" stroke="black" fill="none" marker-end="url(#arrow)" />'%(stroke_width,X0,xy0[3],X0,Y0-13-border,X0,xy0[3],X0,Y0-13-border)
-
-        SvgTag += tagSvg + bezierSvg
+    output_layers = []
+    if hasattr(model,'output_layers'):
+        output_layers = model.output_layers
+    elif hasattr(model,'outputs'):
+        output_layers = model.outputs
     
-        if (display_shapes):
-            SvgTag += '<text x="%f" y="%f" text-anchor="middle" alignment-baseline="middle" fill="#000000" font-size="20px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0+border+10,str(out.output_shape[1:]))
+    print(layersInfo)
+    for out in output_layers:
+        if str(id(out)) in layersInfo:
+            xy0 = layersInfo[str(id(out))]['outter_bbox']
+            # Get the position of the box
+            tagSize = font.getsize("Output")
+            X0 = (xy0[0]+xy0[2])/2
+            Y0 = xy0[3] + L 
+            bbox[3] += L
+            _H = np.max((_H,Y0))
+            
+            tag_color = "#acacace2"
+            border_color = "#4d4d4da9"
+            font_color = "#ffffffff"
+            
+            outter_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border-border,Y0-border,tagSize[0] + 2*h_border+2*border,H0+2*border,1.2*bradius,1.2*bradius,border_color[0:-2],_hex2RGB(border_color)[3]/255.)
+            inner_rectangle_svg = '<rect x="%f" y="%f" width="%f" height="%f" rx="%f" ry="%f" fill="%s" fill-opacity="%1.2f" />'%(X0-tagSize[0]//2 - h_border,Y0,tagSize[0] + 2*h_border,H0,bradius,bradius,tag_color[0:-2],_hex2RGB(tag_color)[3]/255.)
+            text_svg = '<text x="%f" y="%f" text-anchor="middle" alignment-baseline="middle" fill="%s" fill-opacity="%1.2f" font-size="30px" font-family="Ubuntu Light" font-weight="normal" dy=".3em">Output</text>'%(X0,Y0+(tagSize[1] - tagSize[1]/2 + border),font_color[0:-2],_hex2RGB(font_color)[3]/255.)
+        
+            tagSvg = "<g>" + outter_rectangle_svg + inner_rectangle_svg + text_svg + "</g>"    
+    
+            # Now add edge (line)
+            bezierSvg = '<path stroke-width="%i" d="M%f,%f C %f %f, %f %f, %f %f" stroke="black" fill="none" marker-end="url(#arrow)" />'%(stroke_width,X0,xy0[3],X0,Y0-13-border,X0,xy0[3],X0,Y0-13-border)
+    
+            SvgTag += tagSvg + bezierSvg
+        
+            if (display_shapes):
+                SvgTag += '<text x="%f" y="%f" text-anchor="middle" alignment-baseline="middle" fill="#000000" font-size="20px" font-family="Ubuntu Light" dy=".3em">%s</text>'%(X0,Y0+H0+border+10,str(out.output_shape[1:]))
 
     if (verbose):
         t9 = time.time()
