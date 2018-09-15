@@ -52,7 +52,7 @@ If the display_params flag was set to True in the previous example the result wo
 * **Manuel Blanco Valentin** - http://github.com/manuelblancovalentin
 * **Clecio R. Bom** - https://github.com/cdebom
 
-If you use this repository in your research project please consider include the authors in your acknowledgements and share the repository url.
+If you use this repository in your research project please consider including the authors in your acknowledgements and share the repository url.
 
 
 ## FUNCTION INPUTS & FLAGS
