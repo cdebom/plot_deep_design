@@ -132,5 +132,8 @@ A DEMO of this usage and the code can be found in jupyter notebook "Plot_Deep_Ne
 
 * **Manuel Blanco Valentin** - http://github.com/manuelblancovalentin
 * **Clecio R. Bom** - https://github.com/cdebom
+If you use this repository in your research project please consider include the authors in your acknowledgements and share the repository url.
+
+
 
  
