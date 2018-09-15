@@ -47,6 +47,13 @@ If the display_params flag was set to True in the previous example the result wo
  <img src="./my_model_params.png">
 </p>
 
+## Authors
+
+* **Manuel Blanco Valentin** - http://github.com/manuelblancovalentin
+* **Clecio R. Bom** - https://github.com/cdebom
+
+If you use this repository in your research project please consider include the authors in your acknowledgements and share the repository url.
+
 
 ## FUNCTION INPUTS & FLAGS
 This function handles 7 different inputs, which are:
@@ -128,11 +135,7 @@ Notice that these layers are created using the Activation layer and specifying t
 
 A DEMO of this usage and the code can be found in jupyter notebook "Plot_Deep_Nets_DEMO.ipynb".
 
-## Authors
 
-* **Manuel Blanco Valentin** - http://github.com/manuelblancovalentin
-* **Clecio R. Bom** - https://github.com/cdebom
-If you use this repository in your research project please consider include the authors in your acknowledgements and share the repository url.
 
 
 
